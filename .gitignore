@@ -127,3 +127,4 @@ terraform.tfstate.backup
 terraform_setup/
 *.zip
 
+terraform_setup/
