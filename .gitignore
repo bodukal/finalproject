@@ -117,3 +117,7 @@ Temporary Items
 .terraform/
 .terraform/
 .terraform/
+.terraform/
+terraform_setup/terraform.tfstate
+terraform_setup/terraform.tfstate.backup
+terraform_setup/.terraform.lock.hcl
