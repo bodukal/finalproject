@@ -2,19 +2,16 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-variable "ami_id" {
-  default = "ami-0c02fb55956c7d316"
+variable "key_name" {
+  default = "saturday"
 }
 
 variable "instance_type" {
   default = "t2.medium"
 }
 
-variable "key_name" {
-  default = "saturday"
-}
-
-variable "subnet_id" {
-  default = "subnet-0288fd1a95b286638"
+variable "amazon_linux_ami" {
+  description = "Amazon Linux 2 AMI for us-east-1"
+  default     = "ami-0c2b8ca1dad447f8a"  # As of May 2025
 }
 

@@ -1,0 +1,33 @@
+- hosts: master
+  become: yes
+
+  vars:
+    cluster_name: "k8s.kopskluster.local"
+    state_store: "s3://kopskluster"
+    zones: "us-east-1a,us-east-1b"
+    node_count: 2
+    node_size: "t2.medium"
+    control_plane_size: "t2.medium"
+
+  tasks:
+    - name: Export KOPS_STATE_STORE to .bash_profile
+      lineinfile:
+        path: /home/ec2-user/.bash_profile
+        line: "export KOPS_STATE_STORE={{ state_store }}"
+        create: yes
+      become_user: ec2-user
+
+    - name: Source profile (load environment variables)
+      shell: . /home/ec2-user/.bash_profile
+      args:
+        executable: /bin/bash
+
+    - name: Create Kubernetes cluster config with kops
+      shell: |
+        export KOPS_STATE_STORE={{ state_store }}
+        /usr/local/bin/kops create cluster --name={{ cluster_name }} --zones={{ zones }} --node-count={{ node_count }} --node-size={{ node_size }} --control-plane-size={{ control_plane_size }} --yes --cloud=aws
+      args:
+        executable: /bin/bash
+      environment:
+        KOPS_STATE_STORE: "{{ state_store }}"
+

@@ -1,9 +1,33 @@
 ---
-- name: Install latest kubectl and kops binaries
+- name: Install AWS CLI, kubectl, and kops
   hosts: all
   become: yes
 
   tasks:
+    - name: Install unzip, curl, jq
+      yum:
+        name:
+          - unzip
+          - curl
+          - jq
+        state: present
+
+    - name: Install AWS CLI v2
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+
+    - name: Unzip AWS CLI
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install AWS CLI
+      shell: /tmp/aws/install
+      args:
+        creates: /usr/local/bin/aws
+
     - name: Get latest stable kubectl version
       shell: curl -sL https://dl.k8s.io/release/stable.txt
       register: kubectl_version
@@ -11,28 +35,22 @@
       delay: 5
       until: kubectl_version.stdout != ""
 
-    - name: Show kubectl version debug
-      debug:
-        var: kubectl_version.stdout
-      become: no
-
-    - name: Download kubectl binary
+    - name: Download kubectl
       get_url:
         url: "https://dl.k8s.io/release/{{ kubectl_version.stdout }}/bin/linux/amd64/kubectl"
         dest: /usr/local/bin/kubectl
         mode: '0755'
-      become: yes
 
-    - name: Get latest kops version tag
+    - name: Get latest kops version
       shell: curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | jq -r '.tag_name'
       register: kops_version
       retries: 3
       delay: 5
       until: kops_version.stdout != ""
-      become: no
 
-    - name: Show kops version debug
-      debug:
-        var: kops_version.stdout
-      become: no
+    - name: Download kops
+      get_url:
+        url: "https://github.com/kubernetes/kops/releases/download/{{ kops_version.stdout }}/kops-linux-amd64"
+        dest: /usr/local/bin/kops
+        mode: '0755'
 
