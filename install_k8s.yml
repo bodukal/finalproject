@@ -1,0 +1,38 @@
+---
+- name: Install latest kubectl and kops binaries
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Get latest stable kubectl version
+      shell: curl -sL https://dl.k8s.io/release/stable.txt
+      register: kubectl_version
+      retries: 3
+      delay: 5
+      until: kubectl_version.stdout != ""
+
+    - name: Show kubectl version debug
+      debug:
+        var: kubectl_version.stdout
+      become: no
+
+    - name: Download kubectl binary
+      get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_version.stdout }}/bin/linux/amd64/kubectl"
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+      become: yes
+
+    - name: Get latest kops version tag
+      shell: curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | jq -r '.tag_name'
+      register: kops_version
+      retries: 3
+      delay: 5
+      until: kops_version.stdout != ""
+      become: no
+
+    - name: Show kops version debug
+      debug:
+        var: kops_version.stdout
+      become: no
+
