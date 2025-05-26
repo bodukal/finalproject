@@ -37,8 +37,7 @@ pipeline {
                 script {
                     sh '''
                         kubectl set image deployment/webcal-deployment webcal-container=${DOCKER_IMAGE} --record || \
-                        kubectl apply -f k8s/webcal-deployment.yaml
-                        
+                        kubectl apply -f k8s/webcal-deployment.yaml 
                         kubectl rollout status deployment/webcal-deployment
                     '''
                 }
