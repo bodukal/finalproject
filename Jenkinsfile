@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'bodukal/webcal:latest'
         GIT_REPO = 'https://github.com/bodukal/finalproject.git'
-        GIT_BRANCH = 'project-1'
+        GIT_BRANCH = 'project-3'
     }
 
     stages {
@@ -32,13 +32,26 @@ pipeline {
             }
         }
 
-        stage('Run Container') {
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh 'docker rm -f webcal-container || true'
-                    sh 'docker run -d --name webcal-container -p 8082:8080 ${DOCKER_IMAGE}'
+                    sh '''
+                        kubectl set image deployment/webcal-deployment webcal-container=${DOCKER_IMAGE} --record || \
+                        kubectl apply -f k8s/webcal-deployment.yaml
+                        
+                        kubectl rollout status deployment/webcal-deployment
+                    '''
                 }
             }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Pipeline failed!'
+        }
+        success {
+            echo 'Pipeline executed successfully.'
         }
     }
 }
